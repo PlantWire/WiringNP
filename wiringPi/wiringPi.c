@@ -74,6 +74,7 @@
 #include "softTone.h"
 // #include <unistd.h>
 
+#include "boardtype_friendlyelec.h"
 #include "wiringPi.h"
 
 #ifndef TRUE
@@ -312,42 +313,6 @@ static int *syspin = 0;
 //	Take a Wiring pin (0 through X) and re-map it to the BCM_GPIO pin
 //	Cope for 3 different board revisions here.
 
-// WiringPiNr. gegeben .. -> Array GPIOx orange pi guenter neu
-// A ab 0x00, B ab 0x20, C ab 0x40, D ab 0x50 ......
-// 00 - 31 = PA00-PA31
-// 32 - 63 = PB00-PB31
-// 64 - 95 = PC00-PC31
-// 96 - 127 = PD00-PD31
-// 128 - 159 = PE00-PE31
-// 160 - 191 = PF00-PF31
-// 192 - 223 = PG00-PG31
-// nanopi m1 done
-
-// wPi number to /sys/gpio number
-static int pinToGpio_m1 [MAX_PIN_COUNT] ={
-    0,     6,  //  0,  1
-    2,     3,  //  2,  3
-    200, 201,  //  4,  5
-    1,   203,  //  6,  7
-    12,   11,  //  8,  9
-    67,   17,  // 10, 11
-    64,   65,  // 12, 13
-    66,  198,  // 14, 15
-    199,  -1,  // 16, 17
-    -1,   -1,  // 18, 19
-    -1,   20,  // 20, 21
-    21,    8,  // 22, 23
-    13,    9,  // 24, 25
-    7,    16,  // 26, 27
-    15,   14,  // 28, 29
-    19,   18,  // 30, 31
-    4, 5,      // 32, 33 Debug UART pins
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 47
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 63
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
 // wPi number to /sys/gpio number
 static int pinToGpio_neo [MAX_PIN_COUNT] ={
     0,         // 0
@@ -380,159 +345,10 @@ static int pinToGpio_neo [MAX_PIN_COUNT] ={
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-
-// wPi number to /sys/gpio number
-static int pinToGpio_duo [MAX_PIN_COUNT] ={
-    16,       // 0
-    /* 32 Pin */
-    -1,  14,  //  1,  2
-    13,  -1,  //  3,  4
-    -1,  -1,  //  5,  6
-    15, 198,  //  7,  8
-    199, -1,  //  9, 10
-    -1,  12,  // 11, 12
-    11,   4,  // 13, 14
-     5, 203,  // 15, 16
-    -1, 363,  // 17, 18
-    -1, -1,   // 19, 20
-    -1, -1,   // 21, 22
-    -1, -1,   // 23, 24
-    -1, -1,   // 25, 26
-    -1, -1,   // 27, 28
-    -1, -1,   // 29, 30
-    -1, -1,   // 31, 32
-    /* ---------nanopi duo end----------- */
-    -1, -1,   // 33, 34
-    -1, -1,   // 35, 36
-    /* UART0 Tx,Rx */
-    -1, -1,   // 37, 38
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-// wPi number to /sys/gpio number
-static int pinToGpio_duo2 [MAX_PIN_COUNT] ={
-    16,       // 0
-    /* 32 Pin */
-    -1,  14,  //  1,  2
-    13,  -1,  //  3,  4
-    -1,  -1,  //  5,  6
-    15, 198,  //  7,  8
-    -1, 199,  //  9, 10
-    -1,  12,  // 11, 12
-    11,   4,  // 13, 14
-     5, 203,  // 15, 16
-    -1, 363,  // 17, 18
-    -1, -1,   // 19, 20
-    -1, -1,   // 21, 22
-    -1, -1,   // 23, 24
-    -1, -1,   // 25, 26
-    -1, -1,   // 27, 28
-    -1, -1,   // 29, 30
-    -1, -1,   // 31, 32
-    /* ---------nanopi duo end----------- */
-    -1, -1,  // 33, 34
-    -1, -1,  // 35, 36
-    /* UART0 Tx,Rx */
-    -1, -1,  // 37, 38
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-// wPi number to /sys/gpio number
-static int pinToGpio_neocore [MAX_PIN_COUNT] ={
-    0,         // 0
-    6,     2,  //  1,  2
-    3,   200,  //  3,  4
-    201,   1,  //  5,  6
-    203,  12,  //  7,  8
-    11,   67,  //  9, 10
-    -1,   64,  // 11, 12
-    65,   66,  // 13, 14
-    198, 199,  // 15, 16
-    4,     5,  // 17, 18
-    17,   13,  // 19, 20
-    14,   15,  // 21, 22
-    16,    7,  // 23, 24
-    -1, -1,    // 25, 26
-    -1, -1,    // 27, 28
-    -1, -1,    // 29, 30
-    -1, -1,    // 31, 32
-    -1, -1,    // 33, 34
-    -1, -1,    // 35, 36
-    -1, -1,    // 37, 38
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-// wPi number to /sys/gpio number
-static int pinToGpio_t3 [MAX_PIN_COUNT] ={
-    0,         // 0
-    -1,   -1,  //  1,  2
-    116, 112,  //  3,  4
-    -1,   -1,  //  5,  6
-    95,   96,  //  7,  8
-    93,   94,  //  9, 10
-    117, 113,  // 11, 12
-    61,   60,  // 13, 14
-    63,   62,  // 15, 16
-    68,   71,  // 17, 18
-    72,   88,  // 19, 20
-    92,   58,  // 21, 22
-    97,  104,  // 23, 24
-    77, -1,    // 25, 26
-    78, -1,    // 27, 28
-    -1, -1,    // 29, 30
-    -1, -1,    // 31, 32
-    -1, -1,    // 33, 34
-    -1, -1,    // 35, 36
-    -1, -1,    // 37, 38
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-
-/*
-static int pinTobcm [64] ={
-    19, 18, //map to BCM GPIO0,1
-    12, 11, //map to BCM GPIO2,3
-    203, 20, //map to BCM GPIO4,5
-    21, 17, //map to BCM GPIO6,7
-    67, 65, //map to BCM GPIO8,9
-    64, 66, //map to BCM GPIO10,11
-    7, 8, //map to BCM GPIO12,13
-    198, 199, //map to BCM GPIO14,15 
-    16, 0, //map to BCM GPIO16,17 
-    6, 13, //map to BCM GPIO18,19 
-    15, 14, //map to BCM GPIO20,21
-    3, 200, //map to BCM GPIO22,23
-    201, 1, //map to BCM GPIO24,25
-    9, 13, //map to BCM GPIO26,27
-
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 29... 44
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //45... 60
-    -1, -1, -1, -1 // ...63
-};
-*/
-
 // physToGpio:
 //	Take a physical pin (1 through 26) and re-map it to the BCM_GPIO pin
 //	Cope for 2 different board revisions here.
 //	Also add in the P5 connector, so the P5 pins are 3,4,5,6, so 53,54,55,56
-
-
 static int physToGpio_neo [MAX_PIN_COUNT] ={
     -1, 
     /* 24 Pin */
@@ -568,191 +384,6 @@ static int physToGpio_neo [MAX_PIN_COUNT] ={
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 };
 
-static int physToGpio_t3 [MAX_PIN_COUNT] ={
-    -1, 
-    /* 30 Pin */
-    -1,   -1,  //  1,  2
-    116, 112,  //  3,  4
-    -1,   -1,  //  5,  6
-    95,   96,  //  7,  8
-    93,   94,  //  9, 10
-    117, 113,  // 11, 12
-    61,   60,  // 13, 14
-    63,   62,  // 15, 16
-    68,   71,  // 17, 18
-    72,   88,  // 19, 20
-    92,   58,  // 21, 22
-    97,  104,  // 23, 24
-    77, -1,   // 25, 26
-    78, -1,   // 27, 28
-    -1, -1,   // 29, 30
-
-    /* 12 Pin */
-    17, -1,   // 31, 32
-    -1, -1,   // 33, 34
-    -1, -1,   // 35, 36
-
-    /* UART0 Tx,Rx */
-    4, 5,     // 37, 38
-
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-static int physToGpio_neocore [MAX_PIN_COUNT] ={
-    -1, 
-    /* GPIO-1 24Pin */
-    -1,   -1,  //  1,  2
-    12,   -1,  //  3,  4
-    11,   -1,  //  5,  6
-    203, 198,  //  7,  8
-    -1,  199,  //  9, 10
-    0,     6,  // 11, 12
-    2,    -1,  // 13, 14
-    3,   200,  // 15, 16
-    -1,  201,  // 17, 18
-    64,   -1,  // 19, 20
-    65,    1,  // 21, 22
-    66,   67,  // 23, 24
-
-/* GPIO-2 24Pin */
-    -1,  15,  // 25, 26  -> 1, 2
-    -1,  16,  // 27, 28  -> 3, 4
-    -1,  14,  // 29, 30  -> 5, 6
-    -1,  13,  // 31, 32  -> 7, 8
-    -1,  -1,  // 33, 34  -> 9, 10
-    -1,  -1,  // 35, 36  -> 11, 12
-    17,  -1,  // 37, 38  -> 13, 14
-    -1,  -1,  // 39, 40  -> 15, 16
-    -1,   5,  // 41, 42  -> 17, 18
-    -1,   4,  // 43, 44  -> 19, 20
-    -1,  -1,  // 45, 46  -> 21, 22
-    -1,  -1,  // 47, 48  -> 23, 24
-
- /* GPIO-3 24Pin */
-    -1,  -1,  // 49, 50  -> 1, 2
-    -1,  -1,  // 51, 52  -> 3, 4
-    -1,  -1,  // 53, 54  -> 5, 6
-    -1,  -1,  // 55, 56  -> 7, 8
-    -1,  -1,  // 57, 58  -> 9, 10
-    -1,  -1,  // 59, 60  -> 11, 12
-    -1,   7,  // 61, 62  -> 13, 14
-    -1,  -1,  // 63, 64  -> 15, 16
-    -1,  -1,  // 65, 66  -> 17, 18
-    -1,  -1,  // 67, 68  -> 19, 20
-    -1,  -1,  // 69, 70  -> 21, 22
-    -1,  -1,  // 71, 72  -> 23, 24
-    -1,       // 73
-};
-
-static int physToGpio_m1 [MAX_PIN_COUNT] ={
-    -1,   // 0
-    -1,   -1, //  1,  2
-    12,   -1, //  3,  4
-    11,   -1, //  5,  6
-    203, 198, //  7,  8
-    -1,  199, //  9, 10
-    0,     6, // 11, 12
-    2,    -1, // 13, 14
-    3,   200, // 15, 16
-    -1,  201, // 17, 18
-    64,   -1, // 19, 20
-    65,    1, // 21, 22
-    66,   67, // 23, 24
-    -1,   17, // 25, 26
-    19,   18, // 27, 28
-    20,   -1, // 29, 30
-    21,    7, // 31, 32
-    8,    -1, // 33, 34
-    16,   13, // 35, 36
-    9,    15, // 37, 38
-    -1,   14, // 39, 40
-    -1, -1, 4, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 41-> 55
-    -1, -1, -1, -1, -1, -1, -1, -1 // 56-> 63
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-// phys pin number to /sys/gpio number
-static int physToGpio_duo [MAX_PIN_COUNT] ={
-    -1,        // 0
-    /* 32 Pin */
-    -1,   -1,  // 1,   2
-    -1,   -1,  // 3,   4
-    -1,   -1,  // 5,   6
-    -1,   -1,  // 7,   8
-    -1,   -1,  // 9,  10
-    198, 363,  // 11, 12
-    199,  -1,  // 13, 14
-    15,   -1,  // 15, 16
-    16,   -1,  // 17, 18
-    14,   -1,  // 19, 20
-    13,  203,  // 21, 22
-    12,   -1,  // 23, 24
-    11,   -1,  // 25, 26
-    -1,   -1,  // 27, 28
-    4,    -1,  // 29, 30
-    5,    -1,  // 31, 32
-    /* ---------nanopi duo end----------- */
-
-    -1, -1,   // 33, 34
-    -1, -1,   // 35, 36
-
-    /* UART0 Tx,Rx */
-    -1, -1,   // 37, 38
-
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-
-// phys pin number to /sys/gpio number
-static int physToGpio_duo2 [MAX_PIN_COUNT] ={
-    -1,        // 0
-    /* 32 Pin */
-    -1,   5,  //  1, 2
-    -1,   4,  //  3, 4
-    -1,  -1,  //  5, 6
-    -1,  11,  //  7, 8
-    363, 12,  //  9, 10
-    203, 13,  // 11, 12
-    -1,  14,  // 13, 14
-    -1,  16,  // 15, 16
-    -1,  15,  // 17, 18
-    -1, 199,  // 19, 20
-    -1, 198,  // 21, 22
-    -1,  -1,  // 23, 24
-    -1,  -1,  // 25, 26
-    -1,  -1,  // 27, 28
-    -1,  -1,  // 29, 30
-    -1,  -1,  // 31, 32
-    /* ---------nanopi duo end----------- */
-
-     -1, -1,   // 33, 34
-     -1, -1,   // 35, 36
-
-     /* UART0 Tx,Rx */
-     -1, -1,   // 37, 38
-
-     /* 39~63 */
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-     /* 64~73 */
-     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-//
-
 static int syspin_neo [MAX_PIN_COUNT] ={
     -1, -1, 2, 3, 4, 5, 6, 7, 
     8, 9, 10, 11, 12, 13, 14, 15,
@@ -760,112 +391,6 @@ static int syspin_neo [MAX_PIN_COUNT] ={
     24, 25, 26, 27, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-static int syspin_neocore [MAX_PIN_COUNT] ={
-    -1, -1, 2, 3, 4, 5, 6, 7, 
-    8, 9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23,
-    24, 25, 26, 27, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-static int syspin_t3 [MAX_PIN_COUNT] ={
-    -1, -1, 2, 3, 4, 5, 6, 7, 
-    8, 9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23,
-    24, 25, 26, 27, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-
-static int syspin_m1 [MAX_PIN_COUNT] ={
-    -1, -1, 2, 3, 4, 5, 6, 7, 
-    8, 9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23,
-    24, 25, 26, 27, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-static int syspin_duo [MAX_PIN_COUNT] ={
-    -1, -1, 2, 3, 4, 5, 6, 7, 
-    8, 9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23,
-    24, 25, 26, 27, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-static int syspin_duo2 [MAX_PIN_COUNT] ={
-    -1, -1, 2, 3, 4, 5, 6, 7, 
-    8, 9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23,
-    24, 25, 26, 27, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-/*static int edge [MAX_PIN_COUNT] ={
-    -1, -1, -1, -1, 4, -1, -1, 7, //support the INT
-    8, 9, 10, 11, -1, -1, 14, 15,
-    -1, 17, -1, -1, -1, -1, 22, 23,
-    24, 25, -1, 27, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-	
-    // 64~73
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};*/
-
-static int physToPin_m1 [MAX_PIN_COUNT] = //return wiringPI pin
-{
-    -1,      // 0
-    -1, -1,  //  1,  2
-    8,  -1,  //  3,  4
-    9,  -1,  //  5,  6
-    7,  15,  //  7,  8
-    -1, 16,  //  9, 10
-    0,   1,  // 11, 12
-    2,  -1,  // 13, 14
-    3,   4,  // 15, 16
-    -1,  5,  // 17, 18
-    12, -1,  // 19, 20
-    13,  6,  // 21, 22
-    14, 10,  // 23, 24
-    -1, 11,  // 25, 26
-
-    30, 31,  // 27, 28
-    21, -1,  // 29, 30
-    22, 26,  // 31, 32
-    23, -1,  // 33, 34
-    24, 27,  // 35, 36
-    25, 28,  // 37, 38
-    -1, 29,  // 39, 40
-    // Padding:
-
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 56
-    -1, -1, -1, -1, -1, -1, -1, // ... 63
 
     /* 64~73 */
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -894,157 +419,6 @@ static int physToPin_neo [MAX_PIN_COUNT] = //return wiringPI pin
     -1,  -1,  // 33, 34
     -1,  -1,  // 35, 36
     17,  18,  // 37, 38
-
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-static int physToPin_t3 [MAX_PIN_COUNT] = //return wiringPI pin
-{
-    -1,        // 0
-  -1,  -1,   // 1, 2
-   3,   4,   // 3, 4
-  -1,  -1,   // 5, 6
-   7,   8,   // 7, 8
-
-   9,  10,   // 9, 10
-  11,  12,   //11, 12
-  13,  14,   //13, 14
-  15,  16,   //15, 16
-  17,  18,   //17, 18
-  19,  20,   //19, 20
-  21,  22,   //21, 22
-  23,  24,   //23, 24
-
-  25,  -1,   //25, 26
-  27,  -1,   //27, 28
-  -1,  -1,   //29, 30
-
-   /* ---------nanopc t3 end----------- */
-
-  -1,  -1,   //31, 32
-  -1,  -1,   //33, 34
-  -1,  -1,   //35, 36
-
-  -1,  -1,   //37, 38
-
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-
-static int physToPin_neocore [MAX_PIN_COUNT] = //return wiringPI pin
-{
-/* GPIO-1 24Pin */
-    -1,      //  0
-    -1, -1,  //  1,  2 ->  1,  2
-    8,  -1,  //  3,  4 ->  3,  4
-    9,  -1,  //  5,  6 ->  5,  6
-    7,  15,  //  7,  8 ->  7,  8
-    -1, 16,  //  9, 10 ->  9, 10
-    0,   1,  // 11, 12 -> 11, 12
-    2,  -1,  // 13, 14 -> 13, 14
-    3,   4,  // 15, 16 -> 15, 16
-    -1,  5,  // 17, 18 -> 17, 18
-    12, -1,  // 19, 20 -> 19, 20
-    13,  6,  // 21, 22 -> 21, 22
-    14, 10,  // 23, 24 -> 23, 24
-
-  /* GPIO-2 24Pin */
-    -1,  22,  // 25, 26  ->  1,  2
-    -1,  23,  // 27, 28  ->  3,  4
-    -1,  21,  // 29, 30  ->  5,  6
-    -1,  20,  // 31, 32  ->  7,  8
-    -1,  -1,  // 33, 34  ->  9, 10
-    -1,  -1,  // 35, 36  -> 11, 12
-    19,  -1,  // 37, 38  -> 13, 14
-    -1,  -1,  // 39, 40  -> 15, 16
-    -1,  18,  // 41, 42  -> 17, 18
-    -1,  17,  // 43, 44  -> 19, 20
-    -1,  -1,  // 45, 46  -> 21, 22
-    -1,  -1,  // 47, 48  -> 23, 24
-
-   /* GPIO-3 24Pin */
-    -1,  -1,  // 49, 50  ->  1,  2
-    -1,  -1,  // 51, 52  ->  3,  4
-    -1,  -1,  // 53, 54  ->  5,  6
-    -1,  -1,  // 55, 56  ->  7,  8
-    -1,  -1,  // 57, 58  ->  9, 10
-    -1,  -1,  // 59, 60  -> 11, 12
-    -1,  24,  // 61, 62  -> 13, 14
-    -1,  -1,  // 63, 64  -> 15, 16
-    -1,  -1,  // 65, 66  -> 17, 18
-    -1,  -1,  // 67, 68  -> 19, 20
-    -1,  -1,  // 69, 70  -> 21, 22
-    -1,  -1,  // 71, 72  -> 23, 24
-    -1,       // 73
-};
-
-
-
-static int physToPin_duo [MAX_PIN_COUNT] = //return wiringPI pin //note: same as physToWpi
-{
-    -1,       //  0
-    -1,  -1,  //  1,  2
-    -1,  -1,  //  3,  4
-    -1,  -1,  //  5,  6
-    -1,  -1,  //  7,  8
-    -1,  -1,  //  9, 10
-     8,  -1,  // 11, 12
-     9,  -1,  // 13, 14
-     7,  -1,  // 15, 16
-     0,  -1,  // 17, 18
-     2,  -1,  // 19, 20
-     3,  16,  // 21, 22
-    12,  -1,  // 23, 24
-    13,  -1,  // 25, 26
-    -1,  -1,  // 27, 28
-    14,  -1,  // 29, 30
-    15,  -1,  // 31, 32
-     /* ---------nanopi duo end----------- */
-    -1,  -1,  // 33, 34
-    -1,  -1,  // 35, 36
-    -1,  -1,  // 37, 38
-
-    /* 39~63 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-
-    /* 64~73 */
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-};
-
-static int physToPin_duo2 [MAX_PIN_COUNT] = //return wiringPI pin //note: same as physToWpi
-{
-    -1,      //  0
-    -1, 15,  //  1,  2
-    -1, 14,  //  3,  4
-    -1, -1,  //  5,  6
-    -1, 13,  //  7,  8
-    -1, 12,  //  9, 10
-    16,  3,  // 11, 12
-    -1,  2,  // 13, 14
-    -1,  0,  // 15, 16
-    -1,  7,  // 17, 18
-    -1,  9,  // 19, 20
-    -1,  8,  // 21, 22
-    -1, -1,  // 23, 24
-    -1, -1,  // 25, 26
-    -1, -1,  // 27, 28
-    -1, -1,  // 29, 30
-    -1, -1,  // 31, 32
-    /* ---------nanopi duo end----------- */
-    -1, -1,  // 33, 34
-    -1, -1,  // 35, 36
-    -1, -1,  // 37, 38
 
     /* 39~63 */
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -1254,23 +628,6 @@ int sunxi_get_gpio_mode(int pin) {
       return reval;
     }
 
-    if (BoardID == NanoPC_T3) {
-      phyaddr = T3_GPIO_BASE + (bank * 4096) + POS_GPIO_ENB;
-      if (wiringPiDebug)
-        printf("func:%s pin:%d,  bank:%d index:%d phyaddr:0x%x\n", __func__,
-               pin, bank, index, phyaddr);
-      
-      regval = *(uint32_t *)((uint32_t)gpio + phyaddr);
-      if (wiringPiDebug)
-        printf("read reg val: 0x%x offset:%d  return: %d\n", regval, offset,
-               reval);
-      reval = (regval >> index) & 1;
-      if (wiringPiDebug)
-        printf("read reg val: 0x%x offset:%d  return: %d\n", regval, offset,
-               reval);
-      return reval;
-    }
-
     phyaddr = SUNXI_GPIO_BASE + (bank * 36) + ((index >> 3) << 2);
     if (wiringPiDebug)
         printf("func:%s pin:%d,  bank:%d index:%d phyaddr:0x%x\n", __func__, pin, bank, index, phyaddr);
@@ -1291,79 +648,8 @@ void sunxi_set_gpio_mode(int pin, int mode) {
   int offset = ((index - ((index >> 3) << 3)) << 2);
   uint32_t phyaddr = 0;
 
-  // Preper date:
-  uint32_t AltFun_addr = 0;
-  int AltF_bit = 0;
-
   if (BP_PIN_MASK[bank][index] == -1) {
     printf("line:%d pin(%d) number error\n", __LINE__, pin);
-    return;
-  }
-
-  if (BoardID == NanoPC_T3) {
-    // Clear ALTFunciont
-    if (index > 15) {
-      AltF_bit = 2 * (index - 16);
-      AltFun_addr = T3_GPIO_BASE + (bank * 4096) + POS_GPIO_ALTFEN1;
-    } else {
-      AltF_bit = 2 * index;
-      AltFun_addr = T3_GPIO_BASE + (bank * 4096) + POS_GPIO_ALTFEN0;
-    }
-    if (wiringPiDebug)
-      printf(
-          "func:%s pin:%d,  bank:%d index:%d AltFun_addr:0x%x AltF_bit: %d "
-          ".\n",
-          __func__, pin, bank, index, AltFun_addr, AltF_bit);
-
-#define regval_AltF *(uint32_t *)((uint32_t)gpio + AltFun_addr)
-
-    if (wiringPiDebug)
-      printf("Before clear,AltF values is 0x%x .\n", regval_AltF);
-      
-    regval_AltF &= ~(3 << AltF_bit);  // clear 2 bit with ALTFUN
-
-    if (wiringPiDebug)
-      printf("After clear, AltF values is 0x%x .\n", regval_AltF);
-
-    // Set ALTFunc bit
-    /*see more info with
-    http://wiki.friendlyarm.com/wiki/images/d/d5/NanoPC-T2-T3-1603-Schematic.pdf
-    GPIOB:26 28 29 30 31    fun1 [Altf_bit+1:Altf_bit]  01
-    GPIOC:4 7 8 13 14 24    fun1
-    
-    GPIOC:28 29 30 31       fun0 [Altf_bit+1:Altf_bit]  00
-    GPIOD:0 1 8 16 17 20 21 fun0
-    */
-    if (pin < 92) {  // setting Alt func bit.92 means GPIOC28
-      regval_AltF |= (1 << AltF_bit);
-
-      if (wiringPiDebug)
-        printf("After set , AltF values is  0x%x .\n", regval_AltF);
-    }
-
-    phyaddr = T3_GPIO_BASE + (bank * 4096) + POS_GPIO_ENB;
-    if (wiringPiDebug) {
-      printf("func:%s pin:%d,  bank:%d index:%d phyaddr:0x%x\n", __func__, pin,
-             bank, index, phyaddr);
-    }
-    // regval = *(uint32_t *)((uint32_t)gpio + phyaddr);
-#define regvals *(uint32_t *)((uint32_t)gpio + phyaddr)  // in NanoPC-T3 ,only after #define bit address can
-                                                         // save value,i don't know why....
-    if (wiringPiDebug)  // waste me lots of time....  >_<
-      printf("read reg val: 0x%x offset:%d .\n", regvals, offset);
-      
-    if (INPUT == mode) {
-      regvals &= ~(1 << index);  // setting INPUT mode by bit 0
-
-      if (wiringPiDebug) printf("Input mode set over reg val: 0x%x\n", regvals);
-    } else if (OUTPUT == mode) {
-      regvals |= (1 << index);  // setting OUT mode by bit 1
-
-      if (wiringPiDebug)
-        printf("Output mode set over reg val: 0x%x\n", regvals);
-    } else if (PWM_OUTPUT == mode) {
-      printf("not yet support NanoPC-T3 to pwm out mode!");
-    }
     return;
   }
 
@@ -1417,32 +703,10 @@ void sunxi_set_gpio_mode(int pin, int mode) {
 
 void sunxi_digitalWrite(int pin, int value) {
     uint32_t regval = 0;
-    uint32_t GPIOOUT_addr = 0;
     int bank = pin >> 5;
     int index = pin - (bank << 5);
     if (BP_PIN_MASK[bank][index] == -1) {
       printf("pin number error\n");
-      return;
-    }
-    if (BoardID == NanoPC_T3) {
-      GPIOOUT_addr = T3_GPIO_BASE + (bank * 4096);
-      if (wiringPiDebug)
-        printf("func:%s pin:%d, value:%d bank:%d index:%d phyaddr:0x%x\n",
-               __func__, pin, value, bank, index, GPIOOUT_addr);
-//in NanoPC-T3 ,only after #define bit address can save value,i don't know why....
-// 在NanoPC-T3上，如果要修改寄存器里的数据，一定要#define之后操作才行，
-#define regval_out *(uint32_t *)((uint32_t)gpio + GPIOOUT_addr)
-      if (wiringPiDebug)
-        printf("befor write reg val: 0x%x,index:%d\n", regval_out, index);
-      if (0 == value) {
-        regval_out &= ~(1 << index);
-        if (wiringPiDebug)
-          printf("LOW val set over reg val: 0x%x\n", regval_out);
-      } else {
-        regval_out |= (1 << index);
-        if (wiringPiDebug)
-          printf("HIGH val set over reg val: 0x%x\n", regval_out);
-      }
       return;
     }
 
@@ -1472,29 +736,12 @@ void sunxi_digitalWrite(int pin, int value) {
 
 int sunxi_digitalRead(int pin) {
     uint32_t regval = 0;
-    uint32_t reval = 0;
     uint32_t phyaddr;
     int bank = pin >> 5;
     int index = pin - (bank << 5);
     if (BP_PIN_MASK[bank][index] == -1) {
       printf("line:%d pin(=%d) number error\n", __LINE__, pin);
       return regval;
-    }
-
-    if (BoardID == NanoPC_T3) {
-      phyaddr = T3_GPIO_BASE + (bank * 4096) + POS_GPIO_FAD;
-      if (wiringPiDebug)
-        printf("func:%s pin:%d,  bank:%d index:%d phyaddr:0x%x\n", __func__,
-               pin, bank, index, phyaddr);
-      regval = *(uint32_t *)((uint32_t)gpio + phyaddr);
-      if (wiringPiDebug)
-        printf("read reg val: 0x%x  pin:%d  return: %d\n", regval, pin,
-               reval);
-      reval = (regval >> index) & 1;
-      if (wiringPiDebug)
-        printf("read reg val: 0x%x  pin:%d  return: %d\n", regval, pin,
-               reval);
-      return reval;
     }
 
     phyaddr = SUNXI_GPIO_BASE + (bank * 36) + 0x10; // +0x10 -> data reg
@@ -1642,26 +889,10 @@ int isA20(void) {
 }
 
 int piBoardRev(void) {
-    BoardHardwareInfo* retBoardInfo;
-    int ret = getBoardType(&retBoardInfo);
-    if (ret >= 0) {
-      if (retBoardInfo->boardTypeId > ALLWINNER_BASE && retBoardInfo->boardTypeId <= ALLWINNER_MAX 
-                && retBoardInfo->boardTypeId != NanoPi_A64) {
-        version = BPRVER;
-        if (wiringPiDebug)
-            printf("piBoardRev:  %d\n", version);
-        return BPRVER;
-      } else {
-        if (retBoardInfo->boardTypeId == NanoPC_T3) {
-          printf("if use NanoPC-T3, only support GPIO input and GPIO out!!\n");
-        } else {
-          printf("This NanoPi model is currently not supported. \n");
-        }
-      }
-    } else {
-        piBoardRevOops("Is not NanoPi based board. ");
-    }
-    return 0;
+    version = BPRVER;
+    if (wiringPiDebug)
+        printf("piBoardRev:  %d\n", version);
+    return BPRVER;
 }
 
 /*
@@ -1676,27 +907,11 @@ int piBoardRev(void) {
 void piBoardId(int *model, int *rev, int *mem, int *maker, int *overVolted) {
     (void) piBoardRev(); // Call this first to make sure all's OK. Don't care about the result.
 
-    BoardHardwareInfo* retBoardInfo;
-    int ret = getBoardType(&retBoardInfo);
-    if (ret >= 0) {
-        if ((retBoardInfo->boardTypeId > ALLWINNER_BASE && retBoardInfo->boardTypeId <= ALLWINNER_MAX 
-                && retBoardInfo->boardTypeId != NanoPi_A64)||retBoardInfo->boardTypeId == NanoPC_T3) {
-            *model = retBoardInfo->boardTypeId;
-            *rev = PI_VERSION_1_2;
-            *mem = 1024;
-            *maker = PI_MAKER_FRIENDLYELEC;
-        } else {
-            *model = 0;
-            *rev = 0;
-            *mem = 0;
-            *maker = 0; 
-        }
-    } else {
-        *model = 0;
-        *rev = 0;
-        *mem = 0;
-        *maker = 0;
-    }
+    *model = NanoPi_NEO;
+    *rev = PI_VERSION_1_2;
+    *mem = 1024;
+    *maker = PI_MAKER_FRIENDLYELEC;
+
     *overVolted = 0;
 }
 
@@ -1708,15 +923,15 @@ void piBoardId(int *model, int *rev, int *mem, int *maker, int *overVolted) {
  */
 
 int wpiPinToGpio(int wpiPin) {
-    if (pinToGpio == 0) {
-        printf("please call wiringPiSetup first.\n");
-        return -1;
-    }
+  if (pinToGpio == 0) {
+      printf("please call wiringPiSetup first.\n");
+      return -1;
+  }
 	if (wpiPin >= MAX_PIN_COUNT || wpiPin < 0) {
         printf("Invalid pin index.\n");
         return -1;
 	}
-    return pinToGpio [wpiPin];
+  return pinToGpio [wpiPin];
 }
 
 /*
@@ -2331,7 +1546,7 @@ void pwmWrite(int pin, int value) {
         a_val = sunxi_pwm_get_period();
         if (wiringPiDebug)
             printf("==> no:%d period now is :%d,act_val to be set:%d\n", __LINE__, a_val, value);
-        if (value > a_val) {
+        if ((uint32_t) value > a_val) {
             printf("val pwmWrite 0 <= X <= 1024\n");
             printf("Or you can set new range by yourself by pwmSetRange(range\n");
             return;
@@ -2473,7 +1688,7 @@ int waitForInterrupt(int pin, int mS) {
 
     if (pinToGpio == 0 || physToGpio == 0) {
         printf("please call wiringPiSetup first.\n");
-        return;
+        return 0;
     }
 
     if (wiringPiMode == WPI_MODE_PINS) {
@@ -2715,12 +1930,7 @@ int wiringPiSetup(void) {
         return wiringPiFailure(WPI_ALMOST, "wiringPiSetup: Unable to open /dev/mem: %s\n", strerror(errno));
 
     int BASE_Address = 0;
-    if (BoardID == NanoPC_T3) {
-      BASE_Address = T3_BP_BASE;
-
-    } else {
-      BASE_Address = GPIO_BASE_BP;
-    }
+    BASE_Address = GPIO_BASE_BP;
 
     if (wiringPiDebug)
         printf(" *gpio base_address is %X . \n", BASE_Address);
@@ -2747,51 +1957,21 @@ int wiringPiSetup(void) {
 
     initialiseEpoch();
 
-
-    if (faBoardId == NanoPi_M1
-            || faBoardId == NanoPi_M1_Plus
-            || faBoardId == NanoPi_M1_Plus2
-            || faBoardId == NanoPi_K1_Plus) {
-	    pinToGpio = pinToGpio_m1;
-	    physToGpio = physToGpio_m1;
-	    physToPin = physToPin_m1;
-        syspin = syspin_m1;
-    } else if (faBoardId == NanoPi_NEO
-               || faBoardId == NanoPi_NEO_Air
-               || faBoardId == NanoPi_NEO2
-               || faBoardId == NanoPi_NEO_Plus2) {
+    if (faBoardId == NanoPi_NEO) {
 	    pinToGpio = pinToGpio_neo;
 	    physToGpio = physToGpio_neo;
 	    physToPin = physToPin_neo;
         syspin = syspin_neo;
-    } else if (faBoardId == NanoPi_Duo) {
-	    pinToGpio = pinToGpio_duo;
-	    physToGpio = physToGpio_duo;
-	    physToPin = physToPin_duo;
-        syspin = syspin_duo;
-    } else if (faBoardId == NanoPi_Duo2) {
-        pinToGpio = pinToGpio_duo2;
-        physToGpio = physToGpio_duo2;
-        physToPin = physToPin_duo2;
-        syspin = syspin_duo2;
-    } else if (faBoardId == NanoPC_T3) {
-        pinToGpio = pinToGpio_t3;
-        physToGpio = physToGpio_t3;
-        physToPin = physToPin_t3;
-        syspin = syspin_t3;
-    } else if (faBoardId == NanoPi_NEO_Core || faBoardId == NanoPi_NEO_Core2) {
-	    pinToGpio = pinToGpio_neocore;
-	    physToGpio = physToGpio_neocore;
-	    physToPin = physToPin_neocore;
-	    syspin = syspin_neocore;
     } else {
-            if (wiringPiDebug)
+      if (wiringPiDebug) {
         printf("wiringPi: wiringPiSetup fail!\n");
+      }
 	    return -1;
     }
 
-    if (wiringPiDebug)
+    if (wiringPiDebug) {
       printf("wiringPi: wiringPiSetup success!\n");
+    }
 
     return 0;
 }
@@ -2862,32 +2042,10 @@ int wiringPiSetupSys(void) {
 
     piBoardId(&model, &rev, &mem, &maker, &overVolted);
     int faBoardId = model;
-    if (faBoardId == NanoPi_M1
-            || faBoardId == NanoPi_M1_Plus
-            || faBoardId == NanoPi_M1_Plus2
-            || faBoardId == NanoPi_K1_Plus) {
-        pinToGpio = pinToGpio_m1;
-        physToGpio = physToGpio_m1;
-        physToPin = physToPin_m1;
-    } else if (faBoardId == NanoPi_NEO
-               || faBoardId == NanoPi_NEO_Air
-               || faBoardId == NanoPi_NEO2
-               || faBoardId == NanoPi_NEO_Plus2) {
+    if (faBoardId == NanoPi_NEO) {
         pinToGpio = pinToGpio_neo;
         physToGpio = physToGpio_neo;
         physToPin = physToPin_neo;
-    } else if (faBoardId == NanoPi_Duo) {
-        pinToGpio = pinToGpio_duo;
-        physToGpio = physToGpio_duo;
-        physToPin = physToPin_duo;
-    } else if (faBoardId == NanoPi_Duo2) {
-        pinToGpio = pinToGpio_duo2;
-        physToGpio = physToGpio_duo2;
-        physToPin = physToPin_duo2;
-    } else if (faBoardId == NanoPi_NEO_Core || faBoardId == NanoPi_NEO_Core2) {
-        pinToGpio = pinToGpio_neocore;
-        physToGpio = physToGpio_neocore;
-        physToPin = physToPin_neocore;
     }
 
     for (pin = 1; pin < MAX_PIN_COUNT; ++pin) {

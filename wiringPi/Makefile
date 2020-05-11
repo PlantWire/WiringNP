@@ -36,7 +36,7 @@ DEBUG	= -O2
 CC	= gcc
 INCLUDE	= -I.
 DEFS	= -D_GNU_SOURCE
-CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC -Wpointer-to-int-cast
+CFLAGS  = $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
 
 LIBS    =
 
@@ -55,8 +55,7 @@ SRC	=	wiringPi.c						\
 		mcp3002.c mcp3004.c mcp4802.c mcp3422.c			\
 		max31855.c max5322.c					\
 		sn3218.c						\
-		drcSerial.c						\
-		boardtype_friendlyelec.c
+		drcSerial.c
 
 OBJ	=	$(SRC:.c=.o)
 
