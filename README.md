@@ -12,8 +12,6 @@ git clone https://github.com/friendlyarm/WiringNP
 cd WiringNP/wiringPi
 make static
 sudo make install-static
-chmod 755 build
-./build
 ```
 
 # Code Sample with WiringNP
